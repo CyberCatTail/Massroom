@@ -55,27 +55,21 @@ def LLM(document, question):
             messages=[
                 {
                     "role": "user",
-                    "content": f"""DOCUMENT:
-                        {document}
-
-                        QUESTION:
-                        {question}
-
-                        INSTRUCTIONS:
-                        Answer the users QUESTION using the DOCUMENT text above.
-                        Keep your answer ground in the facts of the DOCUMENT.
-                        If the DOCUMENT doesn’t contain the facts to answer the QUESTION return NONE.
-                        Don't use any keywords about document.
+                    "content": f"""You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer or the context is insufficient, please add necessary context.
+                        Question: {question} 
+                        Context: {document} 
+                        Answer:
                     """
                 }
             ]
         )
         return content.choices[0].message.content
     except Exception as e:
+        print(f"LLM cannot response {e}")
         return "" 
     
 def search(query):
-    results = vector_store.similarity_search_with_score(query=query, k=3)
+    results = vector_store.similarity_search_with_score(query=query, k=8)
     concat_all =  "\n".join(map(lambda doc: doc[0].page_content, results))
     document = "\n".join(line for line in concat_all.splitlines() if line.strip())
     return LLM(document, query)
